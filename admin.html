@@ -546,6 +546,19 @@
       color: var(--muted);
       margin-top: 4px;
     }
+  
+    @media print {
+      body * { visibility: hidden !important; }
+      #waybill-print-area, #waybill-print-area * { visibility: visible !important; }
+      #waybill-print-area {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        padding: 20px !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -579,6 +592,9 @@
           <span id="db-status-text">جاري فحص الاتصال...</span>
         </div>
 
+        <button class="btn-action" id="btn-toggle-sound" onclick="toggleSoundNotification()" title="تشغيل / كتم صوت تنبيه الطلبات الجديدة">
+          🔔 الصوت: مفعّل
+        </button>
         <button class="btn-action" onclick="openSettingsModal()" title="إعدادات سوبابيز والواتساب">
           ⚙️ الإعدادات
         </button>
@@ -640,6 +656,13 @@
     <!-- CONTROLS & SEARCH -->
     <div class="controls-panel">
       <div class="tabs-wrap">
+        <!-- Date Scope -->
+        <select id="date-scope-select" class="form-control" style="width: auto; display: inline-block; padding: 6px 10px; font-weight: 700; margin-left: 8px; border-color: var(--border);" onchange="handleDateFilter(this.value)">
+          <option value="all">كل الأوقات 📅</option>
+          <option value="today">طلبات اليوم ⚡</option>
+          <option value="yesterday">طلبات أمس</option>
+          <option value="week">آخر 7 أيام</option>
+        </select>
         <button class="filter-tab active" onclick="filterByStatus('all')">الكل (<span id="count-all">0</span>)</button>
         <button class="filter-tab" onclick="filterByStatus('pending')">قيد الانتظار (<span id="count-pending">0</span>)</button>
         <button class="filter-tab" onclick="filterByStatus('confirmed')">تم التأكيد (<span id="count-confirmed">0</span>)</button>
@@ -688,6 +711,78 @@
     </div>
 
   </main>
+
+  
+  <!-- PRINTABLE WAYBILL MODAL -->
+  <div class="modal-overlay" id="waybill-modal">
+    <div class="modal-box" style="max-width: 650px;">
+      <div class="modal-head">
+        <h3>🖨️ بوليصة شحن رِكاز (فاتورة تسليم مع المندوب)</h3>
+        <button class="modal-close" onclick="closeWaybillModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="waybill-print-area" style="background:#FFFFFF; padding: 25px;">
+        <!-- Waybill Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #8A6848; padding-bottom: 12px; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: #1F2226; margin-bottom: 2px;">رِكاز للعطور (REKAZ Parfums)</h2>
+            <p style="font-size: 0.8rem; color: #6E6A63;">بوليصة استلام وفحص مع المندوب (الدفع عند الاستلام COD)</p>
+          </div>
+          <div style="text-align: left;">
+            <div style="font-size: 1.1rem; font-weight: 800; color: #8A6848;" id="wb-order-num">#RKZ-0000</div>
+            <div style="font-size: 0.75rem; color: #6E6A63;" id="wb-date">2026/09/18</div>
+          </div>
+        </div>
+
+        <!-- Customer & Delivery Box -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #FAF8F5; padding: 14px; border: 1px solid #E8E2D8; border-radius: 4px; margin-bottom: 16px;">
+          <div>
+            <span style="font-size: 0.75rem; color: #6E6A63; display:block;">بيانات العميل:</span>
+            <strong style="font-size: 1rem; color: #1F2226; display:block;" id="wb-cust-name">محمد أحمد</strong>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #2B6CB0; direction: ltr; display:inline-block;" id="wb-cust-phone">01000000000</span>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: #6E6A63; display:block;">وجهة التوصيل:</span>
+            <strong style="font-size: 0.95rem; color: #1F2226;" id="wb-gov">القاهرة</strong>
+            <p style="font-size: 0.85rem; color: #444; margin-top: 2px;" id="wb-addr">المعادي، شارع النصر</p>
+          </div>
+        </div>
+
+        <!-- Order Items Table -->
+        <table style="width:100%; border-collapse:collapse; margin-bottom: 16px; font-size: 0.85rem;">
+          <thead>
+            <tr style="background:#FAF8F5; border-bottom: 1px solid #E8E2D8;">
+              <th style="padding: 8px; text-align:right;">الصنف والتركيز</th>
+              <th style="padding: 8px; text-align:center;">الحجم</th>
+              <th style="padding: 8px; text-align:center;">الكمية</th>
+              <th style="padding: 8px; text-align:left;">المبلغ</th>
+            </tr>
+          </thead>
+          <tbody id="wb-items-tbody">
+            <!-- Dynamic Items -->
+          </tbody>
+        </table>
+
+        <!-- COD Total Highlight -->
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#EAF4EF; border:1px solid #C6F6D5; padding:12px 16px; border-radius:4px; margin-bottom: 16px;">
+          <div>
+            <span style="font-size: 0.85rem; color: #22543D; font-weight:700;">المطلوب تحصيله من العميل عند التسليم:</span>
+            <span style="display:block; font-size: 0.75rem; color: #2D6A4F;">(شامل الشحن المجاني وعيّنة التستر للمعاينة)</span>
+          </div>
+          <div style="font-size: 1.4rem; font-weight: 800; color: #22543D;" id="wb-total">0 ج.م</div>
+        </div>
+
+        <!-- Terms -->
+        <div style="border-top: 1px dashed #E8E2D8; padding-top: 10px; font-size: 0.75rem; color: #6E6A63; line-height: 1.5;">
+          ✓ <strong>ملاحظة للمندوب والعميل:</strong> للعميل كامل الحق في فحص وتجربة عيّنة التستر المرفقة قبل السداد.<br>
+          ✓ خدمة العملاء والمتابعة على مدار الساعة عبر واتساب: <strong>+201106385089</strong>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-action" onclick="closeWaybillModal()">إغلاق</button>
+        <button class="btn-action primary" onclick="printWaybill()">🖨️ طباعة البوليصة الآن</button>
+      </div>
+    </div>
+  </div>
 
   <!-- SETTINGS MODAL -->
   <div class="modal-overlay" id="settings-modal">
@@ -862,6 +957,10 @@
         }
       }
 
+      if (previousOrderCount !== null && ALL_ORDERS.length > previousOrderCount) {
+        playChime();
+      }
+      previousOrderCount = ALL_ORDERS.length;
       renderDashboard();
     }
 
@@ -975,6 +1074,9 @@
             </td>
             <td>
               <div style="display: flex; gap: 6px; align-items: center;">
+                <button class="btn-icon" onclick="openWaybillModal('${order.order_number}')" title="طباعة بوليصة الشحن">
+                  🖨️
+                </button>
                 <a href="${waUrl}" target="_blank" class="btn-wa-client" title="مراسلة العميل واتساب">
                   💬 واتساب
                 </a>
@@ -1007,6 +1109,10 @@
         }
       }
 
+      if (previousOrderCount !== null && ALL_ORDERS.length > previousOrderCount) {
+        playChime();
+      }
+      previousOrderCount = ALL_ORDERS.length;
       renderDashboard();
     }
 
@@ -1028,6 +1134,10 @@
         }
       }
 
+      if (previousOrderCount !== null && ALL_ORDERS.length > previousOrderCount) {
+        playChime();
+      }
+      previousOrderCount = ALL_ORDERS.length;
       renderDashboard();
     }
 
@@ -1037,11 +1147,19 @@
       document.querySelectorAll('.filter-tab').forEach(b => {
         b.classList.toggle('active', b.getAttribute('onclick').includes(`'${status}'`));
       });
+      if (previousOrderCount !== null && ALL_ORDERS.length > previousOrderCount) {
+        playChime();
+      }
+      previousOrderCount = ALL_ORDERS.length;
       renderDashboard();
     }
 
     function handleSearch(val) {
       SEARCH_QUERY = val.trim();
+      if (previousOrderCount !== null && ALL_ORDERS.length > previousOrderCount) {
+        playChime();
+      }
+      previousOrderCount = ALL_ORDERS.length;
       renderDashboard();
     }
 
