@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم رِكاز للعطور | إدارة الطلبات والمبيعات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="rekaz-config.js"></script>
+
+  <style>
+    :root {
+      --wood: #8A6848;
+      --wood-dark: #735336;
+      --wood-light: #F5EFE9;
+      --gold: #9E7422;
+      --onyx: #1F2226;
+      --text: #2D2A26;
+      --muted: #6E6A63;
+      --border: #E8E2D8;
+      --border-subtle: #F0ECE4;
+      --bg: #F8F6F2;
+      --card: #FFFFFF;
+      
+      --status-pending: #B7791F;
+      --status-pending-bg: #FEFCBF;
+      --status-confirmed: #2B6CB0;
+      --status-confirmed-bg: #BEE3F8;
+      --status-shipped: #6B46C1;
+      --status-shipped-bg: #E9D8FD;
+      --status-delivered: #22543D;
+      --status-delivered-bg: #C6F6D5;
+      --status-cancelled: #9B2C2C;
+      --status-cancelled-bg: #FED7D7;
+
+      --r-xs: 2px;
+      --r-sm: 4px;
+      --r-md: 6px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* AUTH GATE MODAL */
+    #auth-gate {
+      position: fixed;
+      inset: 0;
+      background: rgba(31,34,38,0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+    }
+    .auth-card {
+      background: #FFFFFF;
+      padding: 35px 30px;
+      border-radius: var(--r-md);
+      max-width: 380px;
+      width: 90%;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+    }
+    .auth-logo {
+      height: 55px;
+      margin-bottom: 15px;
+    }
+    .auth-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--onyx);
+      margin-bottom: 6px;
+    }
+    .auth-sub {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+    .auth-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 1.1rem;
+      text-align: center;
+      letter-spacing: 4px;
+      font-weight: 700;
+      outline: none;
+      margin-bottom: 15px;
+      transition: border 0.2s;
+    }
+    .auth-input:focus {
+      border-color: var(--wood);
+    }
+    .auth-btn {
+      width: 100%;
+      background: var(--wood);
+      color: #FFFFFF;
+      border: none;
+      padding: 12px;
+      border-radius: var(--r-sm);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .auth-btn:hover { background: var(--wood-dark); }
+    .auth-err {
+      color: #C53030;
+      font-size: 0.8rem;
+      margin-top: 10px;
+      display: none;
+    }
+
+    /* TOP NAVBAR */
+    .admin-navbar {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .navbar-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    .navbar-logo {
+      height: 40px;
+    }
+    .brand-title-wrap h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--onyx);
+    }
+    .brand-title-wrap span {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-action {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: var(--r-sm);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-action:hover {
+      border-color: var(--wood);
+      color: var(--wood);
+    }
+    .btn-action.primary {
+      background: var(--wood);
+      color: #FFFFFF;
+      border-color: var(--wood);
+    }
+    .btn-action.primary:hover {
+      background: var(--wood-dark);
+      border-color: var(--wood-dark);
+      color: #FFFFFF;
+    }
+
+    .db-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--r-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .db-badge.connected {
+      background: #E6FFFA;
+      color: #234E52;
+      border: 1px solid #B2F5EA;
+    }
+    .db-badge.local {
+      background: #FFFAF0;
+      color: #7B341E;
+      border: 1px solid #FEEBC8;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* MAIN CONTENT */
+    .admin-main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 25px 20px 60px;
+    }
+
+    /* KPI STATS ROW */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .stat-card {
+      background: #FFFFFF;
+      padding: 18px 20px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .stat-val {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--onyx);
+    }
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* CONTROLS BAR */
+    .controls-panel {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 16px 20px;
+      margin-bottom: 15px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .tabs-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .filter-tab {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      padding: 6px 12px;
+      border-radius: var(--r-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .filter-tab.active {
+      background: var(--wood-light);
+      border-color: var(--wood);
+      color: var(--wood-dark);
+      font-weight: 700;
+    }
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 360px;
+      min-width: 240px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 0.85rem;
+      font-family: inherit;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: var(--wood);
+    }
+
+    /* ORDERS TABLE */
+    .table-container {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 0.85rem;
+    }
+    .orders-table th {
+      background: #FAF8F5;
+      color: var(--muted);
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .orders-table td {
+      padding: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+    .orders-table tr:hover {
+      background-color: #FCFBF9;
+    }
+
+    /* BADGES & CHIPS */
+    .order-num {
+      font-weight: 700;
+      color: var(--onyx);
+      display: block;
+    }
+    .order-date {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .cust-name {
+      font-weight: 700;
+      color: var(--text);
+    }
+    .cust-phone {
+      font-size: 0.8rem;
+      color: var(--muted);
+      direction: ltr;
+      display: inline-block;
+      text-align: right;
+    }
+    .cust-loc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      max-width: 200px;
+      line-height: 1.3;
+    }
+    .items-chip-list {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .item-chip {
+      background: var(--bg);
+      border: 1px solid var(--border-subtle);
+      padding: 2px 6px;
+      border-radius: var(--r-xs);
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .price-total {
+      font-weight: 800;
+      color: var(--onyx);
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+    .discount-tag {
+      font-size: 0.72rem;
+      color: #2D6A4F;
+      display: block;
+    }
+
+    /* STATUS SELECTOR */
+    .status-select {
+      padding: 6px 10px;
+      border-radius: var(--r-sm);
+      font-weight: 700;
+      font-size: 0.78rem;
+      border: 1px solid transparent;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .status-select.pending { background: var(--status-pending-bg); color: var(--status-pending); border-color: #ECC94B; }
+    .status-select.confirmed { background: var(--status-confirmed-bg); color: var(--status-confirmed); border-color: #90CDF4; }
+    .status-select.shipped { background: var(--status-shipped-bg); color: var(--status-shipped); border-color: #D6BCFA; }
+    .status-select.delivered { background: var(--status-delivered-bg); color: var(--status-delivered); border-color: #9AE6B4; }
+    .status-select.cancelled { background: var(--status-cancelled-bg); color: var(--status-cancelled); border-color: #FEB2B2; }
+
+    /* ACTION BUTTONS */
+    .btn-wa-client {
+      background: #25D366;
+      color: #FFFFFF;
+      border: none;
+      padding: 6px 10px;
+      border-radius: var(--r-sm);
+      font-weight: 700;
+      font-size: 0.78rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .btn-wa-client:hover { opacity: 0.9; }
+
+    .btn-icon {
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 6px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+    .btn-icon:hover {
+      border-color: #E53E3E;
+      color: #E53E3E;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty-state h3 {
+      font-size: 1.1rem;
+      color: var(--onyx);
+      margin-bottom: 6px;
+    }
+
+    /* MODAL (SETTINGS & DETAILS) */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(31,34,38,0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: #FFFFFF;
+      width: 90%;
+      max-width: 580px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #FAF8F5;
+    }
+    .modal-head h3 { font-size: 1.05rem; font-weight: 700; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .modal-foot {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: #FAF8F5;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.82rem;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+    .form-control {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 0.85rem;
+      font-family: inherit;
+      outline: none;
+    }
+    .form-control:focus { border-color: var(--wood); }
+    .form-hint {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- AUTH GATE SCREEN -->
+  <div id="auth-gate">
+    <div class="auth-card">
+      <img src="LOGO.png" alt="رِكاز" class="auth-logo">
+      <h2 class="auth-title">لوحة تحكم رِكاز للعطور</h2>
+      <p class="auth-sub">أدخل رمز الدخول السري للأدمن</p>
+      <input type="password" id="pin-input" class="auth-input" placeholder="••••••••" autofocus>
+      <button class="auth-btn" onclick="checkPin()">دخول لوحة التحكم</button>
+      <div id="auth-err" class="auth-err">رمز المرور غير صحيح، يرجى المحاولة مرة أخرى</div>
+    </div>
+  </div>
+
+  <!-- MAIN ADMIN NAVIGATION -->
+  <header class="admin-navbar">
+    <div class="navbar-container">
+      <a href="index.html" target="_blank" class="navbar-brand">
+        <img src="LOGO.png" alt="رِكاز" class="navbar-logo">
+        <div class="brand-title-wrap">
+          <h1>لوحة تحكم رِكاز</h1>
+          <span>REKAZ Parfums Admin Portal</span>
+        </div>
+      </a>
+
+      <div class="navbar-actions">
+        <div id="db-status-badge" class="db-badge local">
+          <span class="status-dot"></span>
+          <span id="db-status-text">جاري فحص الاتصال...</span>
+        </div>
+
+        <button class="btn-action" onclick="openSettingsModal()" title="إعدادات سوبابيز والواتساب">
+          ⚙️ الإعدادات
+        </button>
+        <button class="btn-action" onclick="openSqlModal()" title="كود Supabase SQL">
+          🗄️ كود SQL
+        </button>
+        <a href="index.html" target="_blank" class="btn-action">
+          🌐 معاينة المتجر
+        </a>
+        <button class="btn-action" onclick="logoutAdmin()" title="تسجيل خروج">
+          🔒 خروج
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DASHBOARD BODY -->
+  <main class="admin-main">
+    
+    <!-- STATS OVERVIEW -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span>إجمالي المبيعات (COD)</span>
+          <span>💰</span>
+        </div>
+        <div class="stat-val" id="stat-revenue">0 ج.م</div>
+        <div class="stat-sub">من الطلبات المؤكدة والمسلمة</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span>إجمالي عدد الطلبات</span>
+          <span>📦</span>
+        </div>
+        <div class="stat-val" id="stat-count">0</div>
+        <div class="stat-sub">كافة الطلبات المسجلة</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span>طلبات قيد الانتظار</span>
+          <span>⏳</span>
+        </div>
+        <div class="stat-val" style="color: var(--status-pending);" id="stat-pending">0</div>
+        <div class="stat-sub">تحتاج تأكيد هاتفي مع العميل</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span>طلبات تم تسليمها</span>
+          <span>✅</span>
+        </div>
+        <div class="stat-val" style="color: var(--status-delivered);" id="stat-delivered">0</div>
+        <div class="stat-sub">تم تحصيل قيمتها بالكامل</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS & SEARCH -->
+    <div class="controls-panel">
+      <div class="tabs-wrap">
+        <button class="filter-tab active" onclick="filterByStatus('all')">الكل (<span id="count-all">0</span>)</button>
+        <button class="filter-tab" onclick="filterByStatus('pending')">قيد الانتظار (<span id="count-pending">0</span>)</button>
+        <button class="filter-tab" onclick="filterByStatus('confirmed')">تم التأكيد (<span id="count-confirmed">0</span>)</button>
+        <button class="filter-tab" onclick="filterByStatus('shipped')">جاري الشحن (<span id="count-shipped">0</span>)</button>
+        <button class="filter-tab" onclick="filterByStatus('delivered')">تم التسليم (<span id="count-delivered">0</span>)</button>
+        <button class="filter-tab" onclick="filterByStatus('cancelled')">ملغي (<span id="count-cancelled">0</span>)</button>
+      </div>
+
+      <div class="search-wrap">
+        <input type="text" id="order-search" class="search-input" placeholder="بحث برقم الطلب، اسم العميل، أو الهاتف..." oninput="handleSearch(this.value)">
+        <button class="btn-action" onclick="createSampleOrder()" title="إضافة طلب تجريبي للاختبار">
+          🧪 طلب تجريبي
+        </button>
+        <button class="btn-action" onclick="exportToCsv()" title="تحميل ملف إكسل لشركات الشحن">
+          📊 تصدير Excel
+        </button>
+        <button class="btn-action primary" onclick="loadOrders()" title="تحديث البيانات لحظياً">
+          🔄 تحديث
+        </button>
+      </div>
+    </div>
+
+    <!-- ORDERS TABLE -->
+    <div class="table-container">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>رقم الطلب والتاريخ</th>
+            <th>العميل والهاتف</th>
+            <th>المحافظة والعنوان</th>
+            <th>المنتجات والأحجام</th>
+            <th>الإجمالي</th>
+            <th>حالة الطلب</th>
+            <th>إجراءات سريعة</th>
+          </tr>
+        </thead>
+        <tbody id="orders-tbody">
+          <!-- Populated by JavaScript -->
+        </tbody>
+      </table>
+
+      <div id="table-empty" class="empty-state" style="display: none;">
+        <h3>لا توجد طلبات تطابق هذا الفلتر حالياً</h3>
+        <p>الطلبات الجديدة المسجلة ستظهر هنا فور وصولها تلقائياً.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>⚙️ إعدادات الربط والتشغيل (Supabase & WhatsApp)</h3>
+        <button class="modal-close" onclick="closeSettingsModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">رابط مشروع Supabase (Project URL):</label>
+          <input type="text" id="cfg-url" class="form-control" placeholder="https://your-id.supabase.co">
+          <div class="form-hint">انسخه من Supabase Dashboard -> Settings -> API -> Project URL</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">مفتاح الوصول العام (Supabase Anon Key):</label>
+          <input type="text" id="cfg-key" class="form-control" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+          <div class="form-hint">انسخه من Supabase Dashboard -> Settings -> API -> anon public</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">رقم واتساب المتجر الرسمي لاستقبال الطلبات:</label>
+          <input type="text" id="cfg-phone" class="form-control" value="201106385089" placeholder="201106385089">
+          <div class="form-hint">الصيغة الدولية بدون علامة + (مضبوط حالياً على 201106385089)</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">رمز المرور السري للأدمن (PIN):</label>
+          <input type="password" id="cfg-pin" class="form-control" value="rekaz2026">
+          <div class="form-hint">الرمز الافتراضي: rekaz2026</div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-action" onclick="closeSettingsModal()">إلغاء</button>
+        <button class="btn-action primary" onclick="saveSettings()">حفظ وتحديث الاتصال 💾</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SQL CODE MODAL -->
+  <div class="modal-overlay" id="sql-modal">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-head">
+        <h3>🗄️ كود إنشاء جداول Supabase (SQL Editor)</h3>
+        <button class="modal-close" onclick="closeSqlModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 12px;">
+          انسخ الكود التالي بضغطة زر، ثم افتح <strong>Supabase Dashboard -> SQL Editor -> New Query</strong> والصقه واضغط <strong>Run</strong>:
+        </p>
+        <textarea id="sql-text" class="form-control" rows="12" readonly style="direction: ltr; font-family: monospace; font-size: 0.78rem;"></textarea>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-action" onclick="closeSqlModal()">إغلاق</button>
+        <button class="btn-action primary" onclick="copySqlCode()">نسخ الكود بالكامل 📋</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    let ALL_ORDERS = [];
+    let CURRENT_FILTER = 'all';
+    let SEARCH_QUERY = '';
+
+    // AUTH CHECK
+    function checkAuth() {
+      const isAuth = sessionStorage.getItem('rekaz_admin_auth');
+      const gate = document.getElementById('auth-gate');
+      if (isAuth === 'true') {
+        gate.style.display = 'none';
+        initAdmin();
+      } else {
+        gate.style.display = 'flex';
+      }
+    }
+
+    function checkPin() {
+      const pin = document.getElementById('pin-input').value.trim();
+      const currentPin = localStorage.getItem('rekaz_admin_pin') || window.REKAZ_CONFIG.ADMIN_PIN || 'rekaz2026';
+      if (pin === currentPin) {
+        sessionStorage.setItem('rekaz_admin_auth', 'true');
+        document.getElementById('auth-gate').style.display = 'none';
+        initAdmin();
+      } else {
+        document.getElementById('auth-err').style.display = 'block';
+      }
+    }
+
+    document.getElementById('pin-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkPin();
+    });
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('rekaz_admin_auth');
+      location.reload();
+    }
+
+    // INIT ADMIN
+    function initAdmin() {
+      updateDbStatus();
+      loadOrders();
+      setInterval(loadOrders, 30000); // Polling every 30s
+    }
+
+    function updateDbStatus() {
+      const badge = document.getElementById('db-status-badge');
+      const text = document.getElementById('db-status-text');
+      if (window.rekazSupabase) {
+        badge.className = 'db-badge connected';
+        text.textContent = 'متصل بـ Supabase';
+      } else {
+        badge.className = 'db-badge local';
+        text.textContent = 'تخزين محلي (يرجى إدخال مفاتيح Supabase)';
+      }
+    }
+
+    // LOAD ORDERS (SMART MERGE BETWEEN SUPABASE & LOCAL STORAGE)
+    async function loadOrders() {
+      // 1. Read local storage first
+      let localOrders = [];
+      try {
+        localOrders = JSON.parse(localStorage.getItem('rekaz_orders') || '[]');
+      } catch (e) {
+        localOrders = [];
+      }
+
+      let supabaseOrders = [];
+      if (window.rekazSupabase) {
+        try {
+          const { data, error } = await window.rekazSupabase
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (!error && Array.isArray(data)) {
+            supabaseOrders = data;
+          } else if (error) {
+            console.warn('Supabase query error:', error.message);
+          }
+        } catch (e) {
+          console.warn('Supabase fetch failed:', e);
+        }
+      }
+
+      // 2. Smart Merge without duplication (keyed by order_number)
+      const orderMap = new Map();
+      localOrders.forEach(o => {
+        if (o.order_number) orderMap.set(o.order_number, o);
+      });
+      supabaseOrders.forEach(o => {
+        if (o.order_number) orderMap.set(o.order_number, o);
+      });
+
+      ALL_ORDERS = Array.from(orderMap.values()).sort((a, b) => {
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      });
+
+      // 3. Persist merged list back to localStorage
+      localStorage.setItem('rekaz_orders', JSON.stringify(ALL_ORDERS));
+
+      // 4. If Supabase is connected, sync any unsynced local orders to Supabase
+      if (window.rekazSupabase && supabaseOrders.length < ALL_ORDERS.length) {
+        const existingSupabaseNums = new Set(supabaseOrders.map(o => o.order_number));
+        const unsynced = ALL_ORDERS.filter(o => !existingSupabaseNums.has(o.order_number));
+        if (unsynced.length > 0) {
+          console.log('REKAZ: Syncing', unsynced.length, 'local orders to Supabase...');
+          window.rekazSupabase.from('orders').insert(unsynced).then(res => {
+            console.log('REKAZ: Unsynced orders synced successfully.');
+          }).catch(e => console.warn('Sync failed:', e));
+        }
+      }
+
+      renderDashboard();
+    }
+
+    // RENDER DASHBOARD
+    function renderDashboard() {
+      // Calculate Stats
+      let revenue = 0;
+      let count = ALL_ORDERS.length;
+      let pending = 0;
+      let confirmed = 0;
+      let shipped = 0;
+      let delivered = 0;
+      let cancelled = 0;
+
+      ALL_ORDERS.forEach(o => {
+        const total = parseFloat(o.total_price) || 0;
+        const st = o.status || 'pending';
+        if (st === 'pending') pending++;
+        else if (st === 'confirmed') { confirmed++; revenue += total; }
+        else if (st === 'shipped') { shipped++; revenue += total; }
+        else if (st === 'delivered') { delivered++; revenue += total; }
+        else if (st === 'cancelled') cancelled++;
+      });
+
+      document.getElementById('stat-revenue').textContent = Math.round(revenue).toLocaleString('ar-EG') + ' ج.م';
+      document.getElementById('stat-count').textContent = count;
+      document.getElementById('stat-pending').textContent = pending;
+      document.getElementById('stat-delivered').textContent = delivered;
+
+      document.getElementById('count-all').textContent = count;
+      document.getElementById('count-pending').textContent = pending;
+      document.getElementById('count-confirmed').textContent = confirmed;
+      document.getElementById('count-shipped').textContent = shipped;
+      document.getElementById('count-delivered').textContent = delivered;
+      document.getElementById('count-cancelled').textContent = cancelled;
+
+      // Filtered list
+      let filtered = ALL_ORDERS.filter(o => {
+        const matchesStatus = CURRENT_FILTER === 'all' || (o.status || 'pending') === CURRENT_FILTER;
+        const q = SEARCH_QUERY.toLowerCase();
+        const matchesSearch = !q || 
+          (o.order_number && o.order_number.toLowerCase().includes(q)) ||
+          (o.customer_name && o.customer_name.toLowerCase().includes(q)) ||
+          (o.customer_phone && o.customer_phone.includes(q)) ||
+          (o.governorate && o.governorate.includes(q));
+        return matchesStatus && matchesSearch;
+      });
+
+      const tbody = document.getElementById('orders-tbody');
+      const emptyDiv = document.getElementById('table-empty');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyDiv.style.display = 'block';
+        return;
+      }
+
+      emptyDiv.style.display = 'none';
+      tbody.innerHTML = filtered.map(order => {
+        const status = order.status || 'pending';
+        const dateStr = order.created_at ? new Date(order.created_at).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' }) : 'الآن';
+        
+        // Parse items
+        let itemsHtml = '';
+        let itemsSummary = '';
+        if (Array.isArray(order.items) && order.items.length > 0) {
+          itemsHtml = order.items.map(it => `<span class="item-chip">${it.product_title || 'عطر رِكاز'} (${it.size || 50} مل) × ${it.quantity || 1}</span>`).join('');
+          itemsSummary = order.items.map(it => `${it.product_title || 'عطر رِكاز'} (${it.size || 50}مل)`).join(' + ');
+        } else {
+          itemsHtml = '<span class="item-chip">باقة رِكاز الفاخرة</span>';
+          itemsSummary = 'باقة رِكاز الفاخرة';
+        }
+
+        // WhatsApp Customer Link
+        const cleanPhone = (order.customer_phone || '').replace(/\D/g, '');
+        const waPhone = cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone;
+        const waMsg = `مرحباً أستاذ ${order.customer_name || ''}، معك خدمة عملاء رِكاز للعطور بخصوص طلبك رقم #${order.order_number} (${itemsSummary}). نود تأكيد موعد وصول مندوب الشحن لحضرتك...`;
+        const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}`;
+
+        return `
+          <tr>
+            <td>
+              <span class="order-num">#${order.order_number || 'RKZ-0000'}</span>
+              <span class="order-date">${dateStr}</span>
+            </td>
+            <td>
+              <div class="cust-name">${order.customer_name || 'عميل كريم'}</div>
+              <a href="tel:${order.customer_phone}" class="cust-phone">${order.customer_phone || '-'}</a>
+            </td>
+            <td>
+              <strong>${order.governorate || 'القاهرة'}</strong>
+              <div class="cust-loc">${order.address || '-'}</div>
+            </td>
+            <td>
+              <div class="items-chip-list">
+                ${itemsHtml}
+              </div>
+            </td>
+            <td>
+              <div class="price-total">${order.total_price || 0} ج.م</div>
+              ${order.discount_amount > 0 ? `<span class="discount-tag">خصم ${order.discount_amount} ج.م (${order.promo_code || 'REKAZ25'})</span>` : ''}
+            </td>
+            <td>
+              <select class="status-select ${status}" onchange="updateOrderStatus('${order.order_number}', this.value)">
+                <option value="pending" ${status === 'pending' ? 'selected' : ''}>قيد الانتظار</option>
+                <option value="confirmed" ${status === 'confirmed' ? 'selected' : ''}>تم التأكيد</option>
+                <option value="shipped" ${status === 'shipped' ? 'selected' : ''}>جاري الشحن</option>
+                <option value="delivered" ${status === 'delivered' ? 'selected' : ''}>تم التسليم</option>
+                <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>ملغي</option>
+              </select>
+            </td>
+            <td>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <a href="${waUrl}" target="_blank" class="btn-wa-client" title="مراسلة العميل واتساب">
+                  💬 واتساب
+                </a>
+                <button class="btn-icon" onclick="deleteOrder('${order.order_number}')" title="حذف الطلب">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // UPDATE ORDER STATUS
+    async function updateOrderStatus(orderNum, newStatus) {
+      // Local memory update
+      const found = ALL_ORDERS.find(o => o.order_number === orderNum);
+      if (found) found.status = newStatus;
+      localStorage.setItem('rekaz_orders', JSON.stringify(ALL_ORDERS));
+
+      // Supabase update
+      if (window.rekazSupabase) {
+        try {
+          await window.rekazSupabase
+            .from('orders')
+            .update({ status: newStatus, updated_at: new Date().toISOString() })
+            .eq('order_number', orderNum);
+        } catch(e) {
+          console.warn('Supabase status update failed:', e);
+        }
+      }
+
+      renderDashboard();
+    }
+
+    // DELETE ORDER
+    async function deleteOrder(orderNum) {
+      if (!confirm(`هل أنت متأكد من حذف الطلب رقم #${orderNum}؟`)) return;
+
+      ALL_ORDERS = ALL_ORDERS.filter(o => o.order_number !== orderNum);
+      localStorage.setItem('rekaz_orders', JSON.stringify(ALL_ORDERS));
+
+      if (window.rekazSupabase) {
+        try {
+          await window.rekazSupabase
+            .from('orders')
+            .delete()
+            .eq('order_number', orderNum);
+        } catch(e) {
+          console.warn('Supabase delete failed:', e);
+        }
+      }
+
+      renderDashboard();
+    }
+
+    // FILTER & SEARCH HANDLERS
+    function filterByStatus(status) {
+      CURRENT_FILTER = status;
+      document.querySelectorAll('.filter-tab').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('onclick').includes(`'${status}'`));
+      });
+      renderDashboard();
+    }
+
+    function handleSearch(val) {
+      SEARCH_QUERY = val.trim();
+      renderDashboard();
+    }
+
+    // EXPORT TO CSV / EXCEL
+    function exportToCsv() {
+      if (ALL_ORDERS.length === 0) {
+        alert('لا توجد طلبات لتصديرها حالياً.');
+        return;
+      }
+
+      const headers = ['رقم الطلب', 'تاريخ الطلب', 'اسم العميل', 'رقم الهاتف', 'المحافظة', 'العنوان', 'المنتجات', 'الإجمالي (ج.م)', 'الخصم', 'الحالة'];
+      const rows = ALL_ORDERS.map(o => [
+        `"${o.order_number || ''}"`,
+        `"${o.created_at ? new Date(o.created_at).toLocaleDateString('ar-EG') : ''}"`,
+        `"${(o.customer_name || '').replace(/"/g, '""')}"`,
+        `"${o.customer_phone || ''}"`,
+        `"${o.governorate || ''}"`,
+        `"${(o.address || '').replace(/"/g, '""')}"`,
+        `"${(Array.isArray(o.items) ? o.items.map(i => `${i.product_title} (${i.size}ml) x${i.quantity}`).join(' + ') : '').replace(/"/g, '""')}"`,
+        `"${o.total_price || 0}"`,
+        `"${o.discount_amount || 0}"`,
+        `"${o.status || 'pending'}"`
+      ]);
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `rekaz_orders_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // SETTINGS MODAL
+    function openSettingsModal() {
+      document.getElementById('cfg-url').value = localStorage.getItem('rekaz_supabase_url') || window.REKAZ_CONFIG.SUPABASE_URL || '';
+      document.getElementById('cfg-key').value = localStorage.getItem('rekaz_supabase_anon_key') || window.REKAZ_CONFIG.SUPABASE_ANON_KEY || '';
+      document.getElementById('cfg-phone').value = localStorage.getItem('rekaz_wa_phone') || window.REKAZ_CONFIG.WHATSAPP_PHONE || '201106385089';
+      document.getElementById('cfg-pin').value = localStorage.getItem('rekaz_admin_pin') || window.REKAZ_CONFIG.ADMIN_PIN || 'rekaz2026';
+      document.getElementById('settings-modal').classList.add('active');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settings-modal').classList.remove('active');
+    }
+
+    function saveSettings() {
+      const url = document.getElementById('cfg-url').value.trim();
+      const key = document.getElementById('cfg-key').value.trim();
+      const phone = document.getElementById('cfg-phone').value.trim().replace(/\D/g, '');
+      const pin = document.getElementById('cfg-pin').value.trim();
+
+      localStorage.setItem('rekaz_supabase_url', url);
+      localStorage.setItem('rekaz_supabase_anon_key', key);
+      localStorage.setItem('rekaz_wa_phone', phone || '201106385089');
+      localStorage.setItem('rekaz_admin_pin', pin || 'rekaz2026');
+
+      window.REKAZ_CONFIG.SUPABASE_URL = url;
+      window.REKAZ_CONFIG.SUPABASE_ANON_KEY = key;
+      window.REKAZ_CONFIG.WHATSAPP_PHONE = phone || '201106385089';
+      window.REKAZ_CONFIG.ADMIN_PIN = pin || 'rekaz2026';
+
+      if (url && key && window.supabase) {
+        try {
+          window.rekazSupabase = window.supabase.createClient(url, key);
+        } catch(e) {
+          console.warn(e);
+        }
+      }
+
+      closeSettingsModal();
+      updateDbStatus();
+      loadOrders();
+      alert('تم حفظ الإعدادات وتحديث الاتصال بنجاح! 🚀');
+    }
+
+    // SQL MODAL
+    const SQL_SCHEMA_STRING = `-- كود إنشاء جداول رِكاز في Supabase SQL Editor:
+CREATE TABLE IF NOT EXISTS public.orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_number TEXT UNIQUE NOT NULL,
+    customer_name TEXT NOT NULL,
+    customer_phone TEXT NOT NULL,
+    governorate TEXT NOT NULL,
+    address TEXT NOT NULL,
+    notes TEXT DEFAULT '',
+    promo_code TEXT DEFAULT '',
+    discount_amount NUMERIC DEFAULT 0,
+    subtotal NUMERIC NOT NULL,
+    shipping_cost NUMERIC DEFAULT 0,
+    total_price NUMERIC NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    items JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_orders_order_number ON public.orders(order_number);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders(status);
+
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public insert" ON public.orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow anon read" ON public.orders FOR SELECT USING (true);
+CREATE POLICY "Allow anon update" ON public.orders FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon delete" ON public.orders FOR DELETE USING (true);
+`;
+
+    function openSqlModal() {
+      document.getElementById('sql-text').value = SQL_SCHEMA_STRING;
+      document.getElementById('sql-modal').classList.add('active');
+    }
+
+    function closeSqlModal() {
+      document.getElementById('sql-modal').classList.remove('active');
+    }
+
+    function copySqlCode() {
+      navigator.clipboard.writeText(SQL_SCHEMA_STRING).then(() => {
+        alert('تم نسخ كود SQL بنجاح! الصقه في Supabase SQL Editor واضغط Run.');
+      });
+    }
+
+    
+    // HELPER: CREATE SAMPLE TEST ORDER
+    function createSampleOrder() {
+      const sampleNames = ['أحمد محمود الشيخ', 'محمد علي إبراهيم', 'سارة عبد الرحمن', 'كريم حسن الديب', 'عمر فاروق التميمي'];
+      const sampleGovs = ['القاهرة', 'الجيزة', 'الإسكندرية', 'المنصورة (الدقهلية)', 'طنطا (الغربية)'];
+      const sampleProducts = [
+        { title: 'رِكاز رويال عود', size: 50, price: 499 },
+        { title: 'رِكاز لافندر فيلفيت', size: 50, price: 499 },
+        { title: 'رِكاز بلاك ليذر', size: 100, price: 850 },
+        { title: 'رِكاز روز دي باريس', size: 30, price: 390 }
+      ];
+
+      const randNum = 'RKZ-' + Math.floor(1000 + Math.random() * 9000);
+      const randProd = sampleProducts[Math.floor(Math.random() * sampleProducts.length)];
+      const randGov = sampleGovs[Math.floor(Math.random() * sampleGovs.length)];
+      const randName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
+      const randPhone = '01' + ['0','1','2','5'][Math.floor(Math.random()*4)] + Math.floor(10000000 + Math.random() * 90000000);
+
+      const subtotal = randProd.price;
+      const finalTotal = Math.round(subtotal * 0.75); // 25% discount
+      const discount = subtotal - finalTotal;
+
+      const sample = {
+        order_number: randNum,
+        customer_name: randName,
+        customer_phone: randPhone,
+        governorate: randGov,
+        address: 'شارع الجمهورية - عمارة النور - الدور الثالث',
+        notes: 'العميل يرغب في معاينة وتجربة التستر أولاً',
+        promo_code: 'REKAZ25',
+        discount_amount: discount,
+        subtotal: subtotal,
+        shipping_cost: 0,
+        total_price: finalTotal,
+        status: 'pending',
+        items: [{
+          product_id: 'rkz-sample',
+          product_title: randProd.title,
+          size: randProd.size,
+          quantity: 1,
+          unit_price: randProd.price,
+          total_item_price: subtotal
+        }],
+        created_at: new Date().toISOString()
+      };
+
+      const existing = JSON.parse(localStorage.getItem('rekaz_orders') || '[]');
+      existing.unshift(sample);
+      localStorage.setItem('rekaz_orders', JSON.stringify(existing));
+
+      if (window.rekazSupabase) {
+        window.rekazSupabase.from('orders').insert([sample]).then(() => {
+          console.log('Sample order pushed to Supabase');
+        }).catch(e => console.warn(e));
+      }
+
+      loadOrders();
+      alert('✓ تم إنشاء طلب تجريبي بنجاح باسم: ' + randName + ' (رقم #' + randNum + ')');
+    }
+
+    // START
+    checkAuth();
+  </script>
+</body>
+</html>
