@@ -1023,63 +1023,130 @@
     }
 
 
-    /* Hero Section (Editorial Luxury Shopify Style) */
+    /* ========================================================
+       MODERN LUXURY HERO SECTION WITH ANIMATION & AMBIENCE
+       ======================================================== */
     .hero-editorial {
-      background: linear-gradient(180deg, #FAF8F5 0%, #F5EFE8 100%);
-      padding: 65px 0 75px;
+      position: relative;
+      background: radial-gradient(circle at 75% 35%, rgba(194, 154, 81, 0.12) 0%, rgba(250, 248, 245, 0.9) 60%, #FAF8F5 100%);
+      padding: 75px 0 90px;
       border-bottom: 1px solid var(--color-border);
+      overflow: hidden;
     }
+
+    .hero-editorial::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      left: 55%;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(138, 104, 72, 0.09) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(50px);
+    }
+
     .hero-split-grid {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 48px;
+      grid-template-columns: 1.18fr 0.82fr;
+      gap: 52px;
       align-items: center;
+      position: relative;
+      z-index: 2;
     }
+
+    /* Tagline Pill */
     .hero-tagline {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       background: #FFFFFF;
-      border: 1px solid var(--color-border);
-      color: var(--color-wood);
-      padding: 4px 14px;
-      border-radius: var(--r-xs);
+      border: 1px solid rgba(138, 104, 72, 0.3);
+      color: var(--color-wood-dark);
+      padding: 6px 16px;
+      border-radius: 30px;
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.5px;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px rgba(138, 104, 72, 0.08);
     }
+    .tagline-pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #2D6A4F;
+      animation: pulseDot 2s infinite;
+    }
+    @keyframes pulseDot {
+      0% { box-shadow: 0 0 0 0 rgba(45, 106, 79, 0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(45, 106, 79, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(45, 106, 79, 0); }
+    }
+
+    /* Title & Typography */
     .hero-title-main {
-      font-size: 2.8rem;
+      font-size: 3.15rem;
       font-weight: 800;
       color: var(--color-onyx);
-      line-height: 1.25;
-      margin-bottom: 16px;
+      line-height: 1.22;
+      margin-bottom: 18px;
       letter-spacing: -0.5px;
     }
-    .hero-title-main span {
+    .hero-title-main .hero-wood-highlight {
       color: var(--color-wood);
+      position: relative;
+      display: inline-block;
     }
+    .hero-title-main .hero-wood-highlight::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: rgba(138, 104, 72, 0.2);
+      border-radius: 2px;
+      z-index: -1;
+    }
+
     .hero-lead-text {
       font-size: 16px;
       color: var(--color-muted);
-      line-height: 1.75;
+      line-height: 1.8;
       margin-bottom: 28px;
       max-width: 580px;
     }
+    .hero-lead-text strong {
+      color: var(--color-onyx);
+    }
+
+    /* Trust Chips */
     .hero-guarantee-points {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      gap: 10px;
       margin-bottom: 32px;
     }
     .guarantee-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
+      gap: 9px;
+      background: #FFFFFF;
+      padding: 9px 14px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--color-border);
+      font-size: 13px;
+      font-weight: 700;
       color: var(--color-onyx);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      transition: all 0.25s ease;
+    }
+    .guarantee-item:hover {
+      border-color: var(--color-wood);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(138, 104, 72, 0.1);
     }
     .guarantee-item svg {
       stroke: var(--color-wood);
@@ -1087,91 +1154,221 @@
       stroke-width: 2;
       flex-shrink: 0;
     }
+
+    /* Actions Row */
     .hero-actions-row {
       display: flex;
       align-items: center;
       gap: 14px;
       flex-wrap: wrap;
+      margin-bottom: 22px;
     }
     .btn-hero-wood {
+      position: relative;
       background: var(--color-wood);
       color: #FFFFFF;
       border: none;
-      padding: 15px 34px;
+      padding: 16px 36px;
       border-radius: var(--r-sm);
       font-size: 15px;
       font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      transition: var(--transition);
+      gap: 9px;
+      box-shadow: 0 6px 20px rgba(138, 104, 72, 0.35);
+      transition: all 0.3s ease;
+      overflow: hidden;
     }
     .btn-hero-wood:hover {
       background: var(--color-wood-dark);
       transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(138, 104, 72, 0.45);
     }
+    .btn-hero-wood::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      transform: skewX(-25deg);
+      animation: btnShimmer 4s infinite;
+    }
+    @keyframes btnShimmer {
+      0%, 80% { left: -100%; }
+      100% { left: 150%; }
+    }
+
     .btn-hero-outline {
       background: #FFFFFF;
       color: var(--color-onyx);
       border: 1px solid var(--color-border);
-      padding: 14px 26px;
+      padding: 15px 28px;
       border-radius: var(--r-sm);
       font-size: 14.5px;
-      font-weight: 600;
+      font-weight: 700;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: var(--transition);
+      gap: 8px;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
     .btn-hero-outline:hover {
       border-color: var(--color-wood);
       color: var(--color-wood);
+      transform: translateY(-2px);
     }
 
-    .hero-visual-card {
-      position: relative;
-      background: #FFFFFF;
-      border: 1px solid var(--color-border);
-      border-radius: var(--r-sm);
-      padding: 30px;
-      text-align: center;
-      box-shadow: var(--shadow-card);
-    }
-    .hero-visual-card img {
-      max-width: 100%;
-      height: 380px;
-      object-fit: contain;
-      transition: transform 0.4s ease;
-    }
-    .hero-visual-card:hover img {
-      transform: scale(1.03);
-    }
-    .hero-floating-guarantee {
-      position: absolute;
-      bottom: -15px;
-      right: 20px;
-      background: #FFFFFF;
-      border: 1px solid var(--color-border);
-      padding: 10px 18px;
-      border-radius: var(--r-xs);
-      box-shadow: var(--shadow-card);
+    .hero-social-proof {
       display: flex;
       align-items: center;
       gap: 10px;
+      font-size: 12.5px;
+      color: var(--color-muted);
+      font-weight: 600;
     }
-    .floating-icon {
-      width: 36px; height: 36px;
-      border-radius: var(--r-full);
+    .proof-stars {
+      color: #D4AF37;
+      letter-spacing: 1px;
+    }
+
+    /* ========================================================
+       HERO VISUAL SHOWCASE (LEVITATING BOTTLE & AMBIENCE)
+       ======================================================== */
+    .hero-visual-side {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .hero-pedestal-stage {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--r-md);
+      padding: 40px 30px 45px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(31,34,38,0.06);
+    }
+    .hero-pedestal-stage::before {
+      content: '';
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(194, 154, 81, 0.2) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* Levitating Bottle Animation */
+    .hero-bottle-wrap {
+      position: relative;
+      z-index: 2;
+      animation: levitateBottle 4.5s ease-in-out infinite;
+    }
+    .hero-bottle-img {
+      max-width: 100%;
+      height: 360px;
+      object-fit: contain;
+      filter: drop-shadow(0 15px 25px rgba(31,34,38,0.12));
+    }
+    @keyframes levitateBottle {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-12px) rotate(0.6deg);
+      }
+    }
+
+    /* Breathing Shadow */
+    .hero-bottle-shadow {
+      width: 150px;
+      height: 16px;
+      background: radial-gradient(ellipse at center, rgba(31,34,38,0.22) 0%, transparent 70%);
+      margin: -10px auto 0;
+      border-radius: 50%;
+      animation: breatheShadow 4.5s ease-in-out infinite;
+    }
+    @keyframes breatheShadow {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.35;
+      }
+      50% {
+        transform: scale(0.8);
+        opacity: 0.15;
+      }
+    }
+
+    /* Floating Badges */
+    .float-badge-top {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--color-border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-onyx);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      animation: floatBadgeA 4s ease-in-out infinite;
+    }
+    @keyframes floatBadgeA {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .float-badge-bottom {
+      position: absolute;
+      bottom: -18px;
+      left: 18px;
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      padding: 10px 16px;
+      border-radius: var(--r-sm);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: floatBadgeB 4.2s ease-in-out infinite;
+    }
+    @keyframes floatBadgeB {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+    .float-badge-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
       background: var(--color-green-bg);
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: var(--color-green);
     }
-    .floating-text strong {
-      display: block; font-size: 13px; color: var(--color-onyx); font-weight: 700;
+    .float-badge-meta strong {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--color-onyx);
     }
-    .floating-text span {
-      font-size: 11px; color: var(--color-muted);
+    .float-badge-meta span {
+      font-size: 10.5px;
+      color: var(--color-muted);
     }
 
     /* Service Pillars Strip */
@@ -1376,20 +1573,22 @@
   </div>
 
 
-  <!-- HERO SECTION -->
+  <!-- HERO SECTION (MODERN LUXURY ANIMATED SHOWCASE) -->
   <section class="hero-editorial">
     <div class="container hero-split-grid">
       <div class="hero-text-content">
         <div class="hero-tagline">
-          <span>العطور الملكية الأولى في مصر بتركيز 35% النقي</span>
+          <span class="tagline-pulse-dot"></span>
+          <span>الفخامة الملكية الأولى في مصر · تركيز 35% النقي</span>
         </div>
         <h1 class="hero-title-main">
-          عطور فاخرة تترك <span>أثراً لا يُنسى</span> مع كل خطوة
+          عطور فاخرة تترك <span class="hero-wood-highlight">أثراً لا يُنسى</span> مع كل خطوة
         </h1>
         <p class="hero-lead-text">
-          صُممت عطور <strong>رِكاز</strong> من أندر الزيوت العطرية الفرنسية والشرقية المعتقة بتركيز <strong>Extrait de Parfum</strong> الذي يمنحك ثباتاً حقيقياً يتجاوز 24 ساعة وفوحاناً يأسر الحضور. استمتع بتجربة تسوق راقية مع <strong>حق المعاينة والتجربة قبل دفع أي مليم</strong>.
+          توليفة استثنائية صُممت من أنقى الزيوت العطرية الفرنسية والشرقية المعتقة بتركيز <strong>Extrait de Parfum الأصلي</strong> لثبات حقيقي يتجاوز 24 ساعة. نضمن لك راحة البال الكاملة مع <strong>معاينة وتجربة عيّنة التستر مع المندوب قبل سداد أي مليم</strong>.
         </p>
 
+        <!-- Trust Chips -->
         <div class="hero-guarantee-points">
           <div class="guarantee-item">
             <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -1401,35 +1600,56 @@
           </div>
           <div class="guarantee-item">
             <svg viewBox="0 0 24 24" width="18" height="18"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-            <span>شحن سريع لكافة محافظات مصر</span>
+            <span>شحن سريع لجميع المحافظات</span>
           </div>
           <div class="guarantee-item">
             <svg viewBox="0 0 24 24" width="18" height="18"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line></svg>
-            <span>عينة تستر 10 مل مجانية مع كل طلب</span>
+            <span>تستر 10 مل مجاني مع كل طلب</span>
           </div>
         </div>
 
+        <!-- Action Buttons -->
         <div class="hero-actions-row">
           <button class="btn-hero-wood" onclick="openOrderModal('rkz-01', 50)">
             <span>اطلب الآن بالدفع عند الاستلام</span>
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="#FFFFFF" fill="none" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
           <a href="deal.html" class="btn-hero-outline">
-            <span>شاهد عرض اليوم الحصري (وفر 50%)</span>
+            <span>عرض اليوم الحصري (وفر 50%) ✨</span>
           </a>
+        </div>
+
+        <!-- Social Proof Ticker -->
+        <div class="hero-social-proof">
+          <span class="proof-stars">★★★★★</span>
+          <span><strong>4.9 / 5</strong> بناءً على أكثر من <strong>1,480 عميل</strong> عاينوا واستلموا طلباتهم</span>
         </div>
       </div>
 
+      <!-- Hero Visual Stage with Levitation & Shadow -->
       <div class="hero-visual-side">
-        <div class="hero-visual-card">
-          <img src="rekaz-flagship.jpg" alt="عطر رِكاز رويال عود">
-          <div class="hero-floating-guarantee">
-            <div class="floating-icon">
+        <div class="hero-pedestal-stage">
+          <!-- Top Floating Pill -->
+          <div class="float-badge-top">
+            <span>✨ تركيز 35% Extrait النقي</span>
+          </div>
+
+          <!-- Levitating Bottle -->
+          <div class="hero-bottle-wrap">
+            <img src="rekaz-flagship.jpg" alt="عطر رِكاز رويال عود" class="hero-bottle-img">
+          </div>
+
+          <!-- Breathing Shadow -->
+          <div class="hero-bottle-shadow"></div>
+
+          <!-- Bottom Floating Guarantee Card -->
+          <div class="float-badge-bottom">
+            <div class="float-badge-icon">
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="#2D6A4F" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </div>
-            <div class="floating-text">
-              <strong>ضمان الاسترجاع الفوري</strong>
-              <span>افحص عيّنتك أولاً قبل الدفع</span>
+            <div class="float-badge-meta">
+              <strong>معاينة مجانية 100%</strong>
+              <span>افحص عيّنتك أولاً قبل الدفع مع المندوب</span>
             </div>
           </div>
         </div>
